@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Files</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .file-item {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .file-info h3 {
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .file-meta {
+            color: #666;
+            font-size: 14px;
+        }
+        .file-actions a {
+            background: #28a745;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-left: 10px;
+        }
+        .file-actions a:hover {
+            background: #218838;
+        }
+        .nav-links {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .nav-links a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Search Files</h1>
+        
+        <div class="nav-links">
+            <a href="index.html">Upload</a>
+            <a href="search.html">Search Files</a>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search by filename or description...">
+            <button id="searchBtn">Search</button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Initialize Supabase - REPLACE WITH YOUR PROJECT DETAILS
+        const supabaseUrl = 'YOUR_SUPABASE_PROJECT_URL';
+        const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const results = document.getElementById('results');
+
+        // Load all files on page load
+        loadFiles();
+
+        searchBtn.addEventListener('click', loadFiles);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') loadFiles();
+        });
+
+        async function loadFiles() {
+            const searchTerm = searchInput.value.trim();
+            results.innerHTML = '<div class="loading">Loading files...</div>';
+
+            try {
+                let query = supabase
+                    .from('files')
+                    .select('*')
+                    .order('upload_date', { ascending: false });
+
+                // Add search filter if there's a search term
+                if (searchTerm) {
+                    query = query.or(`original_name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
+                }
+
+                const { data: files, error } = await query;
+
+                if (error) throw error;
+
+                displayFiles(files);
+            } catch (error) {
+                console.error('Error loading files:', error);
+                results.innerHTML = '<div class="no-results">Error loading files</div>';
+            }
+        }
+
+        function displayFiles(files) {
+            if (files.length === 0) {
+                results.innerHTML = '<div class="no-results">No files found</div>';
+                return;
+            }
+
+            results.innerHTML = files.map(file => `
+                <div class="file-item">
+                    <div class="file-info">
+                        <h3>${file.original_name}</h3>
+                        <div class="file-meta">
+                            ${file.description ? `<p>${file.description}</p>` : ''}
+                            <p>Size: ${formatFileSize(file.file_size)} • 
+                               Uploaded: ${new Date(file.upload_date).toLocaleDateString()} • 
+                               Downloads: ${file.download_count}</p>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <a href="view.html?id=${file.id}" target="_blank">View</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>
