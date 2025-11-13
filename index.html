@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FileShare App</title>
+    <title>FileShare Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -14,8 +14,10 @@
             --dark: #1e293b;
             --danger: #ef4444;
             --success: #10b981;
+            --warning: #f59e0b;
             --border: #e2e8f0;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --radius: 0.5rem;
         }
         
         * {
@@ -57,6 +59,9 @@
             font-weight: 700;
             color: var(--primary);
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         
         .nav-links {
@@ -70,6 +75,9 @@
             color: var(--secondary);
             font-weight: 500;
             transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         
         .nav-links a:hover, .nav-links a.active {
@@ -83,14 +91,16 @@
         
         .btn {
             padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
+            border-radius: var(--radius);
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s;
             border: none;
             text-decoration: none;
-            display: inline-block;
-            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
         
         .btn-primary {
@@ -122,6 +132,21 @@
             opacity: 0.9;
         }
         
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+        
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+        }
+        
         .page {
             display: none;
             padding: 2rem 0;
@@ -134,7 +159,7 @@
         
         .card {
             background-color: white;
-            border-radius: 0.5rem;
+            border-radius: var(--radius);
             box-shadow: var(--shadow);
             padding: 1.5rem;
             margin-bottom: 1.5rem;
@@ -144,11 +169,19 @@
             margin-bottom: 1rem;
             padding-bottom: 0.5rem;
             border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: between;
+            align-items: center;
         }
         
         .card-title {
             font-size: 1.25rem;
             font-weight: 600;
+        }
+        
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
         }
         
         .form-group {
@@ -165,7 +198,7 @@
             width: 100%;
             padding: 0.75rem;
             border: 1px solid var(--border);
-            border-radius: 0.375rem;
+            border-radius: var(--radius);
             font-size: 1rem;
             transition: border-color 0.3s;
         }
@@ -173,11 +206,12 @@
         .form-control:focus {
             outline: none;
             border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
         
         .upload-area {
             border: 2px dashed var(--border);
-            border-radius: 0.5rem;
+            border-radius: var(--radius);
             padding: 2rem;
             text-align: center;
             margin-bottom: 1rem;
@@ -206,6 +240,11 @@
             align-items: center;
             padding: 1rem;
             border-bottom: 1px solid var(--border);
+            transition: background-color 0.2s;
+        }
+        
+        .file-item:hover {
+            background-color: rgba(0, 0, 0, 0.02);
         }
         
         .file-item:last-child {
@@ -216,15 +255,29 @@
             display: flex;
             align-items: center;
             gap: 1rem;
+            flex: 1;
         }
         
         .file-icon {
             font-size: 1.5rem;
             color: var(--secondary);
+            width: 40px;
+            text-align: center;
+        }
+        
+        .file-details {
+            flex: 1;
         }
         
         .file-name {
             font-weight: 500;
+            margin-bottom: 0.25rem;
+            word-break: break-word;
+        }
+        
+        .file-meta {
+            font-size: 0.875rem;
+            color: var(--secondary);
         }
         
         .file-actions {
@@ -234,7 +287,7 @@
         
         .alert {
             padding: 1rem;
-            border-radius: 0.375rem;
+            border-radius: var(--radius);
             margin-bottom: 1rem;
         }
         
@@ -250,8 +303,14 @@
             border: 1px solid var(--danger);
         }
         
+        .alert-warning {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+        
         .hidden {
-            display: none;
+            display: none !important;
         }
         
         .user-info {
@@ -277,6 +336,8 @@
             max-height: 500px;
             margin: 0 auto;
             display: block;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         
         .download-btn {
@@ -284,6 +345,134 @@
             align-items: center;
             gap: 0.5rem;
             margin-top: 1rem;
+        }
+        
+        .preview-container {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .search-input {
+            flex: 1;
+        }
+        
+        .filter-options {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--secondary);
+        }
+        
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .page-btn {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: var(--radius);
+            cursor: pointer;
+        }
+        
+        .page-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: var(--secondary);
+            font-size: 0.875rem;
+        }
+        
+        .share-options {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .share-link {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--light);
+            font-family: monospace;
+            font-size: 0.875rem;
+        }
+        
+        .copy-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
         }
         
         footer {
@@ -310,10 +499,29 @@
                 justify-content: center;
             }
             
+            .file-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .file-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            
             .footer-content {
                 flex-direction: column;
                 gap: 1rem;
                 text-align: center;
+            }
+            
+            .search-box {
+                flex-direction: column;
+            }
+            
+            .share-options {
+                flex-direction: column;
             }
         }
     </style>
@@ -322,19 +530,21 @@
     <header>
         <div class="container">
             <nav class="navbar">
-                <a href="#home" class="logo">FileShare</a>
+                <a href="#home" class="logo">
+                    <span>📁</span> FileShare Pro
+                </a>
                 <ul class="nav-links">
-                    <li><a href="#home" class="nav-link" data-page="home">Home</a></li>
-                    <li><a href="#my-files" class="nav-link" data-page="my-files">My Files</a></li>
+                    <li><a href="#home" class="nav-link" data-page="home">🏠 Home</a></li>
+                    <li><a href="#my-files" class="nav-link" data-page="my-files">📂 My Files</a></li>
                 </ul>
                 <div class="auth-buttons" id="auth-buttons">
-                    <a href="#signin" class="btn btn-outline" data-page="signin">Sign In</a>
-                    <a href="#signup" class="btn btn-primary" data-page="signup">Sign Up</a>
+                    <a href="#signin" class="btn btn-outline" data-page="signin">🔑 Sign In</a>
+                    <a href="#signup" class="btn btn-primary" data-page="signup">👤 Sign Up</a>
                 </div>
                 <div class="user-info hidden" id="user-info">
                     <div class="user-avatar" id="user-avatar">U</div>
                     <span id="user-email">user@example.com</span>
-                    <button class="btn btn-outline" id="signout-btn">Sign Out</button>
+                    <button class="btn btn-outline" id="signout-btn">🚪 Sign Out</button>
                 </div>
             </nav>
         </div>
@@ -346,10 +556,14 @@
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">Upload Files</h2>
+                    <div class="card-actions">
+                        <button class="btn btn-outline btn-sm" id="clear-uploads">Clear All</button>
+                    </div>
                 </div>
                 <div id="upload-area" class="upload-area">
                     <div class="upload-icon">📁</div>
                     <p>Drag & drop files here or click to browse</p>
+                    <p class="file-meta">Maximum file size: 50MB</p>
                     <input type="file" id="file-input" multiple class="hidden">
                 </div>
                 <div id="upload-progress" class="hidden">
@@ -361,13 +575,33 @@
                 <div id="upload-result"></div>
             </div>
             
+            <div class="stats-grid" id="stats-grid">
+                <!-- Stats will be populated here -->
+            </div>
+            
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">Recent Files</h2>
+                    <div class="card-actions">
+                        <div class="search-box">
+                            <input type="text" id="search-recent" class="form-control search-input" placeholder="Search files...">
+                            <button class="btn btn-outline btn-sm" id="clear-search">Clear</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-options">
+                    <button class="filter-btn active" data-filter="all">All Files</button>
+                    <button class="filter-btn" data-filter="image">Images</button>
+                    <button class="filter-btn" data-filter="document">Documents</button>
+                    <button class="filter-btn" data-filter="video">Videos</button>
+                    <button class="filter-btn" data-filter="audio">Audio</button>
                 </div>
                 <ul class="file-list" id="recent-files">
                     <!-- Recent files will be populated here -->
                 </ul>
+                <div class="pagination" id="recent-pagination">
+                    <!-- Pagination will be populated here -->
+                </div>
             </div>
         </section>
 
@@ -385,10 +619,27 @@
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">My Uploaded Files</h2>
+                    <div class="card-actions">
+                        <div class="search-box">
+                            <input type="text" id="search-my-files" class="form-control search-input" placeholder="Search my files...">
+                            <button class="btn btn-outline btn-sm" id="clear-my-search">Clear</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-options">
+                    <button class="filter-btn active" data-filter="all">All Files</button>
+                    <button class="filter-btn" data-filter="image">Images</button>
+                    <button class="filter-btn" data-filter="document">Documents</button>
+                    <button class="filter-btn" data-filter="video">Videos</button>
+                    <button class="filter-btn" data-filter="audio">Audio</button>
+                    <button class="filter-btn" data-filter="large">Large Files (>10MB)</button>
                 </div>
                 <ul class="file-list" id="my-files-list">
                     <!-- User's files will be populated here -->
                 </ul>
+                <div class="pagination" id="my-files-pagination">
+                    <!-- Pagination will be populated here -->
+                </div>
             </div>
         </section>
 
@@ -412,6 +663,9 @@
                 <p style="text-align: center; margin-top: 1rem;">
                     Don't have an account? <a href="#signup" data-page="signup">Sign up</a>
                 </p>
+                <div style="text-align: center; margin-top: 1rem;">
+                    <button class="btn btn-outline btn-sm" id="forgot-password">Forgot Password?</button>
+                </div>
             </div>
         </section>
 
@@ -428,7 +682,7 @@
                     </div>
                     <div class="form-group">
                         <label for="signup-password" class="form-label">Password</label>
-                        <input type="password" id="signup-password" class="form-control" required>
+                        <input type="password" id="signup-password" class="form-control" required minlength="6">
                     </div>
                     <div class="form-group">
                         <label for="signup-confirm-password" class="form-label">Confirm Password</label>
@@ -446,7 +700,7 @@
     <footer>
         <div class="container">
             <div class="footer-content">
-                <p>&copy; 2023 FileShare App. All rights reserved.</p>
+                <p>&copy; 2023 FileShare Pro. All rights reserved.</p>
                 <p>Secure file sharing made simple</p>
             </div>
         </div>
@@ -454,8 +708,8 @@
 
     <script>
         // Supabase configuration - Replace with your project details
-        const SUPABASE_URL = 'https://zhfzpvnhlnvzojmkqxyv.supabase.co'; // Replace with your Supabase project URL
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoZnpwdm5obG52em9qbWtxeHl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5ODIxODEsImV4cCI6MjA3ODU1ODE4MX0.S07wPpHVTi3F5rIJ87lMfLE35azK0Pn4U5wD3H1Xuds'; // Replace with your Supabase anon key
+        const SUPABASE_URL = 'YOUR_SUPABASE_PROJECT_URL'; // Replace with your Supabase project URL
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // Replace with your Supabase anon key
         
         // Initialize Supabase client
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -479,9 +733,25 @@
         const fileViewContent = document.getElementById('file-view-content');
         const signinForm = document.getElementById('signin-form');
         const signupForm = document.getElementById('signup-form');
+        const clearUploadsBtn = document.getElementById('clear-uploads');
+        const searchRecent = document.getElementById('search-recent');
+        const searchMyFiles = document.getElementById('search-my-files');
+        const clearSearch = document.getElementById('clear-search');
+        const clearMySearch = document.getElementById('clear-my-search');
+        const forgotPassword = document.getElementById('forgot-password');
+        const statsGrid = document.getElementById('stats-grid');
+        const recentPagination = document.getElementById('recent-pagination');
+        const myFilesPagination = document.getElementById('my-files-pagination');
         
-        // Current user state
+        // App state
         let currentUser = null;
+        let currentFilter = 'all';
+        let currentSearch = '';
+        let currentPage = {
+            recent: 1,
+            myFiles: 1
+        };
+        const itemsPerPage = 10;
         
         // Initialize the app
         document.addEventListener('DOMContentLoaded', function() {
@@ -491,7 +761,8 @@
             // Set up event listeners
             setupEventListeners();
             
-            // Load recent files
+            // Load initial data
+            loadStats();
             loadRecentFiles();
         });
         
@@ -518,11 +789,57 @@
             uploadArea.addEventListener('dragleave', handleDragLeave);
             uploadArea.addEventListener('drop', handleFileDrop);
             fileInput.addEventListener('change', handleFileSelect);
+            clearUploadsBtn.addEventListener('click', clearUploadResults);
             
             // Authentication
             signoutBtn.addEventListener('click', handleSignOut);
             signinForm.addEventListener('submit', handleSignIn);
             signupForm.addEventListener('submit', handleSignUp);
+            forgotPassword.addEventListener('click', handleForgotPassword);
+            
+            // Search and filter
+            searchRecent.addEventListener('input', debounce(() => {
+                currentSearch = searchRecent.value;
+                currentPage.recent = 1;
+                loadRecentFiles();
+            }, 300));
+            
+            searchMyFiles.addEventListener('input', debounce(() => {
+                currentSearch = searchMyFiles.value;
+                currentPage.myFiles = 1;
+                loadMyFiles();
+            }, 300));
+            
+            clearSearch.addEventListener('click', () => {
+                searchRecent.value = '';
+                currentSearch = '';
+                currentPage.recent = 1;
+                loadRecentFiles();
+            });
+            
+            clearMySearch.addEventListener('click', () => {
+                searchMyFiles.value = '';
+                currentSearch = '';
+                currentPage.myFiles = 1;
+                loadMyFiles();
+            });
+            
+            // Filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.getAttribute('data-filter');
+                    
+                    if (document.getElementById('home-page').classList.contains('active')) {
+                        currentPage.recent = 1;
+                        loadRecentFiles();
+                    } else if (document.getElementById('my-files-page').classList.contains('active')) {
+                        currentPage.myFiles = 1;
+                        loadMyFiles();
+                    }
+                });
+            });
         }
         
         // Handle hash change for routing
@@ -559,6 +876,9 @@
                 // Load page-specific content
                 if (pageId === 'my-files' && currentUser) {
                     loadMyFiles();
+                } else if (pageId === 'home') {
+                    loadStats();
+                    loadRecentFiles();
                 }
             } else {
                 // Default to home if page not found
@@ -588,24 +908,43 @@
                 const { data: urlData, error: urlError } = await supabase
                     .storage
                     .from('files')
-                    .createSignedUrl(file.file_path, 60); // 60 seconds expiry
+                    .createSignedUrl(file.file_path, 3600); // 1 hour expiry
                 
                 if (urlError) throw urlError;
                 
                 // Display file based on type
                 const fileUrl = urlData.signedUrl;
+                const shareUrl = `${window.location.origin}${window.location.pathname}#view?id=${file.id}`;
+                
                 fileViewContent.innerHTML = `
                     <div class="card-header">
                         <h2 class="card-title">${file.name}</h2>
-                        <p>Uploaded by ${file.user_email} on ${new Date(file.created_at).toLocaleDateString()}</p>
+                        <div class="file-actions">
+                            <a href="${fileUrl}" class="btn btn-primary download-btn" download="${file.name}">
+                                📥 Download
+                            </a>
+                        </div>
                     </div>
-                    <div style="text-align: center;">
+                    <div class="file-meta" style="margin-bottom: 1rem;">
+                        <p>Uploaded by ${file.user_email} on ${new Date(file.created_at).toLocaleDateString()}</p>
+                        <p>Size: ${formatFileSize(file.size)} • Type: ${file.type || 'Unknown'}</p>
+                    </div>
+                    <div class="preview-container">
                         ${getFilePreviewHTML(file, fileUrl)}
-                        <a href="${fileUrl}" class="btn btn-primary download-btn" download="${file.name}">
-                            📥 Download File
-                        </a>
+                    </div>
+                    <div class="share-options">
+                        <input type="text" class="share-link" value="${shareUrl}" readonly>
+                        <button class="copy-btn" data-url="${shareUrl}">Copy Link</button>
                     </div>
                 `;
+                
+                // Add event listener to copy button
+                document.querySelector('.copy-btn').addEventListener('click', function() {
+                    const url = this.getAttribute('data-url');
+                    navigator.clipboard.writeText(url).then(() => {
+                        showAlert('Link copied to clipboard!', 'success');
+                    });
+                });
             } catch (error) {
                 console.error('Error loading file:', error);
                 fileViewContent.innerHTML = `
@@ -620,18 +959,44 @@
         function getFilePreviewHTML(file, fileUrl) {
             const extension = file.name.split('.').pop().toLowerCase();
             
-            if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
-                return `<img src="${fileUrl}" alt="${file.name}" class="file-preview">`;
+            if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension)) {
+                return `<img src="${fileUrl}" alt="${file.name}" class="file-preview" onerror="this.style.display='none'; document.getElementById('fallback-preview').style.display='block';">
+                        <div id="fallback-preview" style="display: none; text-align: center; padding: 2rem;">
+                            <div style="font-size: 4rem; margin-bottom: 1rem;">🖼️</div>
+                            <p>Image preview not available</p>
+                            <a href="${fileUrl}" class="btn btn-primary download-btn" download="${file.name}">
+                                📥 Download Image
+                            </a>
+                        </div>`;
             } else if (['pdf'].includes(extension)) {
-                return `<iframe src="${fileUrl}" width="100%" height="500px" style="border: none;"></iframe>`;
+                return `<iframe src="${fileUrl}" width="100%" height="500px" style="border: none; border-radius: var(--radius);"></iframe>`;
             } else if (['mp4', 'webm', 'ogg'].includes(extension)) {
                 return `<video controls class="file-preview"><source src="${fileUrl}" type="video/${extension}"></video>`;
             } else if (['mp3', 'wav', 'ogg'].includes(extension)) {
                 return `<audio controls style="width: 100%;"><source src="${fileUrl}" type="audio/${extension}"></audio>`;
+            } else if (['doc', 'docx'].includes(extension)) {
+                return `<div style="text-align: center; padding: 2rem;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">📝</div>
+                    <p>Document preview not available</p>
+                    <a href="${fileUrl}" class="btn btn-primary download-btn" download="${file.name}">
+                        📥 Download Document
+                    </a>
+                </div>`;
+            } else if (['xls', 'xlsx'].includes(extension)) {
+                return `<div style="text-align: center; padding: 2rem;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">📊</div>
+                    <p>Spreadsheet preview not available</p>
+                    <a href="${fileUrl}" class="btn btn-primary download-btn" download="${file.name}">
+                        📥 Download Spreadsheet
+                    </a>
+                </div>`;
             } else {
                 return `<div style="text-align: center; padding: 2rem;">
                     <div style="font-size: 4rem; margin-bottom: 1rem;">📄</div>
                     <p>No preview available for ${file.name}</p>
+                    <a href="${fileUrl}" class="btn btn-primary download-btn" download="${file.name}">
+                        📥 Download File
+                    </a>
                 </div>`;
             }
         }
@@ -716,10 +1081,18 @@
                 return;
             }
             
+            if (password.length < 6) {
+                showAlert('Password must be at least 6 characters', 'error');
+                return;
+            }
+            
             try {
                 const { data, error } = await supabase.auth.signUp({
                     email,
-                    password
+                    password,
+                    options: {
+                        emailRedirectTo: window.location.origin
+                    }
                 });
                 
                 if (error) throw error;
@@ -728,6 +1101,29 @@
                 showPage('signin');
             } catch (error) {
                 console.error('Sign up error:', error);
+                showAlert(error.message, 'error');
+            }
+        }
+        
+        // Handle password reset
+        async function handleForgotPassword() {
+            const email = document.getElementById('signin-email').value;
+            
+            if (!email) {
+                showAlert('Please enter your email address', 'error');
+                return;
+            }
+            
+            try {
+                const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: `${window.location.origin}#reset-password`,
+                });
+                
+                if (error) throw error;
+                
+                showAlert('Password reset email sent! Check your inbox.', 'success');
+            } catch (error) {
+                console.error('Password reset error:', error);
                 showAlert(error.message, 'error');
             }
         }
@@ -783,6 +1179,15 @@
             
             if (files.length === 0) return;
             
+            // Validate file sizes
+            const maxSize = 50 * 1024 * 1024; // 50MB
+            for (let file of files) {
+                if (file.size > maxSize) {
+                    showAlert(`File "${file.name}" exceeds the 50MB size limit`, 'error');
+                    return;
+                }
+            }
+            
             // Show upload progress
             uploadProgress.classList.remove('hidden');
             progressBar.style.width = '0%';
@@ -809,7 +1214,8 @@
             // Reset file input
             fileInput.value = '';
             
-            // Reload recent files
+            // Reload data
+            loadStats();
             loadRecentFiles();
             
             // If on my-files page, reload that too
@@ -854,7 +1260,8 @@
                 // Show success message for this file
                 const successMsg = document.createElement('div');
                 successMsg.className = 'alert alert-success';
-                successMsg.textContent = `File "${file.name}" uploaded successfully!`;
+                successMsg.innerHTML = `File <strong>"${file.name}"</strong> uploaded successfully! 
+                    <a href="#view?id=${dbData[0].id}" style="margin-left: 0.5rem;">View</a>`;
                 uploadResult.appendChild(successMsg);
                 
                 // Remove message after 5 seconds
@@ -878,21 +1285,106 @@
             }
         }
         
-        // Load recent files
-        async function loadRecentFiles() {
+        // Clear upload results
+        function clearUploadResults() {
+            uploadResult.innerHTML = '';
+        }
+        
+        // Load statistics
+        async function loadStats() {
+            if (!currentUser) return;
+            
             try {
+                // Get total file count and size
                 const { data: files, error } = await supabase
                     .from('files')
-                    .select('*')
-                    .order('created_at', { ascending: false })
-                    .limit(10);
+                    .select('size, user_id');
+                
+                if (error) throw error;
+                
+                // Calculate stats
+                const totalFiles = files.length;
+                const myFiles = files.filter(f => f.user_id === currentUser.id).length;
+                const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+                const mySize = files
+                    .filter(f => f.user_id === currentUser.id)
+                    .reduce((sum, file) => sum + file.size, 0);
+                
+                // Update stats grid
+                statsGrid.innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-value">${totalFiles}</div>
+                        <div class="stat-label">Total Files</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${myFiles}</div>
+                        <div class="stat-label">My Files</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${formatFileSize(totalSize)}</div>
+                        <div class="stat-label">Total Storage</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${formatFileSize(mySize)}</div>
+                        <div class="stat-label">My Storage</div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+        
+        // Load recent files with pagination and filtering
+        async function loadRecentFiles() {
+            try {
+                let query = supabase
+                    .from('files')
+                    .select('*', { count: 'exact' })
+                    .order('created_at', { ascending: false });
+                
+                // Apply search filter
+                if (currentSearch) {
+                    query = query.ilike('name', `%${currentSearch}%`);
+                }
+                
+                // Apply type filter
+                if (currentFilter !== 'all') {
+                    if (currentFilter === 'image') {
+                        query = query.ilike('type', 'image/%');
+                    } else if (currentFilter === 'document') {
+                        query = query.or('type.ilike.%pdf%,type.ilike.%document%,type.ilike.%text%,name.ilike.%.doc%,name.ilike.%.docx%,name.ilike.%.txt%,name.ilike.%.pdf%');
+                    } else if (currentFilter === 'video') {
+                        query = query.ilike('type', 'video/%');
+                    } else if (currentFilter === 'audio') {
+                        query = query.ilike('type', 'audio/%');
+                    } else if (currentFilter === 'large') {
+                        query = query.gte('size', 10 * 1024 * 1024); // 10MB
+                    }
+                }
+                
+                // Apply pagination
+                const from = (currentPage.recent - 1) * itemsPerPage;
+                const to = from + itemsPerPage - 1;
+                query = query.range(from, to);
+                
+                const { data: files, error, count } = await query;
                 
                 if (error) throw error;
                 
                 recentFilesList.innerHTML = '';
                 
                 if (files.length === 0) {
-                    recentFilesList.innerHTML = '<li class="file-item">No files uploaded yet</li>';
+                    recentFilesList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📁</div>
+                            <p>No files found</p>
+                            ${currentSearch || currentFilter !== 'all' ? 
+                                '<p>Try adjusting your search or filter</p>' : 
+                                '<p>Upload some files to get started</p>'
+                            }
+                        </div>
+                    `;
+                    recentPagination.innerHTML = '';
                     return;
                 }
                 
@@ -903,43 +1395,98 @@
                     listItem.innerHTML = `
                         <div class="file-info">
                             <div class="file-icon">${getFileIcon(file.name)}</div>
-                            <div>
+                            <div class="file-details">
                                 <div class="file-name">${file.name}</div>
-                                <div style="font-size: 0.875rem; color: var(--secondary);">
-                                    ${formatFileSize(file.size)} • ${new Date(file.created_at).toLocaleDateString()}
+                                <div class="file-meta">
+                                    ${formatFileSize(file.size)} • 
+                                    ${file.user_email} • 
+                                    ${new Date(file.created_at).toLocaleDateString()}
                                 </div>
                             </div>
                         </div>
                         <div class="file-actions">
-                            <a href="#view?id=${file.id}" class="btn btn-outline">View</a>
+                            <a href="#view?id=${file.id}" class="btn btn-outline btn-sm">View</a>
+                            ${file.user_id === currentUser?.id ? 
+                                `<button class="btn btn-danger btn-sm delete-file" data-file-id="${file.id}">Delete</button>` : 
+                                ''
+                            }
                         </div>
                     `;
                     
                     recentFilesList.appendChild(listItem);
                 });
+                
+                // Add event listeners to delete buttons
+                document.querySelectorAll('.delete-file').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const fileId = this.getAttribute('data-file-id');
+                        deleteFile(fileId);
+                    });
+                });
+                
+                // Add pagination
+                renderPagination(recentPagination, count, currentPage.recent, 'recent');
+                
             } catch (error) {
                 console.error('Error loading recent files:', error);
                 recentFilesList.innerHTML = '<li class="file-item">Error loading files</li>';
             }
         }
         
-        // Load user's files
+        // Load user's files with pagination and filtering
         async function loadMyFiles() {
             if (!currentUser) return;
             
             try {
-                const { data: files, error } = await supabase
+                let query = supabase
                     .from('files')
-                    .select('*')
+                    .select('*', { count: 'exact' })
                     .eq('user_id', currentUser.id)
                     .order('created_at', { ascending: false });
+                
+                // Apply search filter
+                if (currentSearch) {
+                    query = query.ilike('name', `%${currentSearch}%`);
+                }
+                
+                // Apply type filter
+                if (currentFilter !== 'all') {
+                    if (currentFilter === 'image') {
+                        query = query.ilike('type', 'image/%');
+                    } else if (currentFilter === 'document') {
+                        query = query.or('type.ilike.%pdf%,type.ilike.%document%,type.ilike.%text%,name.ilike.%.doc%,name.ilike.%.docx%,name.ilike.%.txt%,name.ilike.%.pdf%');
+                    } else if (currentFilter === 'video') {
+                        query = query.ilike('type', 'video/%');
+                    } else if (currentFilter === 'audio') {
+                        query = query.ilike('type', 'audio/%');
+                    } else if (currentFilter === 'large') {
+                        query = query.gte('size', 10 * 1024 * 1024); // 10MB
+                    }
+                }
+                
+                // Apply pagination
+                const from = (currentPage.myFiles - 1) * itemsPerPage;
+                const to = from + itemsPerPage - 1;
+                query = query.range(from, to);
+                
+                const { data: files, error, count } = await query;
                 
                 if (error) throw error;
                 
                 myFilesList.innerHTML = '';
                 
                 if (files.length === 0) {
-                    myFilesList.innerHTML = '<li class="file-item">You haven\'t uploaded any files yet</li>';
+                    myFilesList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📁</div>
+                            <p>No files found</p>
+                            ${currentSearch || currentFilter !== 'all' ? 
+                                '<p>Try adjusting your search or filter</p>' : 
+                                '<p>Upload some files to get started</p>'
+                            }
+                        </div>
+                    `;
+                    myFilesPagination.innerHTML = '';
                     return;
                 }
                 
@@ -950,16 +1497,17 @@
                     listItem.innerHTML = `
                         <div class="file-info">
                             <div class="file-icon">${getFileIcon(file.name)}</div>
-                            <div>
+                            <div class="file-details">
                                 <div class="file-name">${file.name}</div>
-                                <div style="font-size: 0.875rem; color: var(--secondary);">
-                                    ${formatFileSize(file.size)} • ${new Date(file.created_at).toLocaleDateString()}
+                                <div class="file-meta">
+                                    ${formatFileSize(file.size)} • 
+                                    ${new Date(file.created_at).toLocaleDateString()}
                                 </div>
                             </div>
                         </div>
                         <div class="file-actions">
-                            <a href="#view?id=${file.id}" class="btn btn-outline">View</a>
-                            <button class="btn btn-danger delete-file" data-file-id="${file.id}">Delete</button>
+                            <a href="#view?id=${file.id}" class="btn btn-outline btn-sm">View</a>
+                            <button class="btn btn-danger btn-sm delete-file" data-file-id="${file.id}">Delete</button>
                         </div>
                     `;
                     
@@ -973,10 +1521,75 @@
                         deleteFile(fileId);
                     });
                 });
+                
+                // Add pagination
+                renderPagination(myFilesPagination, count, currentPage.myFiles, 'myFiles');
+                
             } catch (error) {
                 console.error('Error loading user files:', error);
                 myFilesList.innerHTML = '<li class="file-item">Error loading your files</li>';
             }
+        }
+        
+        // Render pagination controls
+        function renderPagination(container, totalCount, currentPage, pageType) {
+            if (!totalCount || totalCount <= itemsPerPage) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            const totalPages = Math.ceil(totalCount / itemsPerPage);
+            let paginationHTML = '';
+            
+            // Previous button
+            paginationHTML += `
+                <button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} 
+                    data-page="${currentPage - 1}" data-type="${pageType}">
+                    ← Previous
+                </button>
+            `;
+            
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                    paginationHTML += `
+                        <button class="page-btn ${i === currentPage ? 'active' : ''}" 
+                            data-page="${i}" data-type="${pageType}">
+                            ${i}
+                        </button>
+                    `;
+                } else if (i === currentPage - 2 || i === currentPage + 2) {
+                    paginationHTML += `<span>...</span>`;
+                }
+            }
+            
+            // Next button
+            paginationHTML += `
+                <button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} 
+                    data-page="${currentPage + 1}" data-type="${pageType}">
+                    Next →
+                </button>
+            `;
+            
+            container.innerHTML = paginationHTML;
+            
+            // Add event listeners to page buttons
+            container.querySelectorAll('.page-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (this.disabled) return;
+                    
+                    const page = parseInt(this.getAttribute('data-page'));
+                    const type = this.getAttribute('data-type');
+                    
+                    currentPage[type] = page;
+                    
+                    if (type === 'recent') {
+                        loadRecentFiles();
+                    } else if (type === 'myFiles') {
+                        loadMyFiles();
+                    }
+                });
+            });
         }
         
         // Delete a file
@@ -1018,9 +1631,10 @@
                 // Show success message
                 showAlert('File deleted successfully!', 'success');
                 
-                // Reload files
-                loadMyFiles();
+                // Reload data
+                loadStats();
                 loadRecentFiles();
+                loadMyFiles();
             } catch (error) {
                 console.error('Error deleting file:', error);
                 showAlert('Error deleting file: ' + error.message, 'error');
@@ -1075,6 +1689,19 @@
             setTimeout(() => {
                 alert.remove();
             }, 5000);
+        }
+        
+        // Debounce function for search
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
         }
     </script>
 </body>
